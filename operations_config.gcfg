@@ -5,3 +5,8 @@ port = 8080
 
 [service]
 env = development
+
+[database]
+user = postgres
+dbname = operations
+sslmode = disable
