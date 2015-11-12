@@ -7,11 +7,11 @@ type Config struct {
 		Port string
 	}
 	Service struct {
-	  Env string
-  }
-	// Database struct {
-	//   User    string
-	//   DbName  string
-	//   SSLMode string
-	// }
+		Env string
+	}
+	Database struct {
+		User    string
+		DbName  string
+		SSLMode string
+	}
 }

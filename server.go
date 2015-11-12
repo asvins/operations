@@ -6,12 +6,12 @@ import (
 
 	"log"
 
-	// "github.com/asvins/common_db/postgres"
+	"github.com/asvins/common_db/postgres"
 	"github.com/asvins/utils/config"
 )
 
 var ServerConfig *Config = new(Config)
-// var DatabaseConfig *postgres.Config
+var DatabaseConfig *postgres.Config
 
 // function that will run before main
 func init() {
@@ -21,7 +21,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	// DatabaseConfig = postgres.NewConfig(ServerConfig.Database.User, ServerConfig.Database.DbName, ServerConfig.Database.SSLMode)
+	DatabaseConfig = postgres.NewConfig(ServerConfig.Database.User, ServerConfig.Database.DbName, ServerConfig.Database.SSLMode)
 	fmt.Println("[INFO] Initialization Done!")
 }
 
