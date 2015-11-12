@@ -14,7 +14,7 @@ const (
 )
 
 type Pack struct {
-	ID           int       `json:"pack_id", gorm:"column:id"`
+	ID           int       `json:"pack_id" gorm:"column:id"`
 	Owner        string    `json:"owner"`
 	Supervisor   string    `json:"supervisor"`
 	From         time.Time `json:"from" gorm:"column:from_date"`
