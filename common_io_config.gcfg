@@ -1,0 +1,14 @@
+; common_io config file
+[modulename]
+value = core
+
+[kafka]
+brokerlist = kafka:9092
+maxretry = 5
+
+[zookeeper]
+addrlist = zk:2181
+maxretry = 5
+
+[deadletters]
+frequency = 10

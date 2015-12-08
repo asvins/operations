@@ -7,13 +7,17 @@ import (
 	"log"
 
 	"github.com/asvins/common_db/postgres"
+	"github.com/asvins/common_io"
 	"github.com/asvins/utils/config"
 )
 
-var ServerConfig *Config = new(Config)
-var DatabaseConfig *postgres.Config
+var (
+	ServerConfig   *Config = new(Config)
+	DatabaseConfig *postgres.Config
+	producer       *common_io.Producer
+	consumer       *common_io.Consumer
+)
 
-// function that will run before main
 func init() {
 	fmt.Println("[INFO] Initializing server")
 	err := config.Load("operations_config.gcfg", ServerConfig)
@@ -21,7 +25,16 @@ func init() {
 		log.Fatal(err)
 	}
 
+	/*
+	*	Database
+	 */
 	DatabaseConfig = postgres.NewConfig(ServerConfig.Database.User, ServerConfig.Database.DbName, ServerConfig.Database.SSLMode)
+
+	/*
+	*	Common io
+	 */
+	setupCommonIo()
+
 	fmt.Println("[INFO] Initialization Done!")
 }
 
