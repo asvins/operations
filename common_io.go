@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/asvins/common_db/postgres"
 	"github.com/asvins/common_io"
@@ -34,20 +35,23 @@ func setupCommonIo() {
 	/*
 	*	topics
 	 */
-	consumer.HandleTopic("treatment_scheduled", treatmentScheduledHandler)
+	consumer.HandleTopic("treatment_created", treatmentCreatedHandler)
 
 	if err = consumer.StartListening(); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func treatmentScheduledHandler(msg []byte) {
+func treatmentCreatedHandler(msg []byte) {
 	p := Pack{}
 	err := json.Unmarshal(msg, &p)
 	if err != nil {
 		fmt.Println("[ERROR] ", err.Error())
 		return
 	}
+
+	p.From = time.Now()
+	p.To = time.Now().AddDate(0, 1, 0)
 
 	db := postgres.GetDatabase(DatabaseConfig)
 	p.Create(db)
