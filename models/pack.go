@@ -7,6 +7,7 @@ const (
 	PackStatusShipped
 	PackStatusOnProduction
 	PackStatusScheduled
+	PackStatusWaitingPayment
 )
 
 type Pack struct {

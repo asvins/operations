@@ -11,6 +11,7 @@ const (
 	PackStatusShipped
 	PackStatusOnProduction
 	PackStatusScheduled
+	PackStatusWaitingPayment
 )
 
 type Pack struct {
@@ -59,6 +60,12 @@ func (p *Pack) Create(db *gorm.DB) error {
 
 func (p *Pack) Save(db *gorm.DB) error {
 	return db.Save(p).Error
+}
+
+func GetPacksByOwnerAndStatus(owner string, status int, db *gorm.DB) ([]Pack, error) {
+	var packs []Pack
+	err := db.Where("owner = ? and status = ?", owner, status).Find(&packs).Error
+	return packs, err
 }
 
 func GetPacksByOwner(owner string, ps *[]Pack, db *gorm.DB) error {

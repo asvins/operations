@@ -8,6 +8,7 @@ import (
 
 	"github.com/asvins/common_db/postgres"
 	"github.com/asvins/common_io"
+	subscriptionModels "github.com/asvins/subscription/models"
 	"github.com/asvins/utils/config"
 )
 
@@ -36,6 +37,7 @@ func setupCommonIo() {
 	*	topics
 	 */
 	consumer.HandleTopic("treatment_created", treatmentCreatedHandler)
+	consumer.HandleTopic("subscription_paid", subscriptionPaidHandler)
 
 	if err = consumer.StartListening(); err != nil {
 		log.Fatal(err)
@@ -52,6 +54,7 @@ func treatmentCreatedHandler(msg []byte) {
 
 	p.From = time.Now()
 	p.To = time.Now().AddDate(0, 1, 0)
+	p.Status = PackStatusWaitingPayment
 
 	db := postgres.GetDatabase(DatabaseConfig)
 	p.Create(db)
@@ -61,4 +64,25 @@ func treatmentCreatedHandler(msg []byte) {
 		fmt.Println("[ERROR] ", err.Error())
 	}
 	producer.Publish("pack_created", b)
+}
+
+func subscriptionPaidHandler(msg []byte) {
+	subs := subscriptionModels.Subscription{}
+	err := json.Unmarshal(msg, &subs)
+	if err != nil {
+		fmt.Println("[ERROR] ", err.Error())
+		return
+	}
+
+	db := postgres.GetDatabase(DatabaseConfig)
+	packs, err := GetPacksByOwnerAndStatus(subs.Owner, PackStatusWaitingPayment, db)
+	if err != nil {
+		fmt.Println("[ERROR] ", err.Error())
+		return
+	}
+
+	for _, pack := range packs {
+		pack.Status = PackStatusScheduled
+		pack.Save(db)
+	}
 }
