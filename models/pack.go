@@ -1,18 +1,31 @@
 package models
 
-import (
-	"time"
-
-	"github.com/jinzhu/gorm"
-)
+import "github.com/jinzhu/gorm"
 
 type Pack struct {
 	Base
-	ID              int `json:"pack_id" gorm:"column:id"`
-	BoxId           int
-	Date            time.Time        `json:"from" gorm:"column:from_date"`
+	ID              int              `json:"pack_id"`
+	BoxId           int              `json:"box_id"`
+	Date            int              `json:"date"`
 	TrackingCode    string           `json:"tracking_code"`
 	PackMedications []PackMedication `json:"pack_medications"`
+}
+
+/*
+*	Sort interface implementation
+ */
+type ByDate []Pack
+
+func (ps ByDate) Len() int {
+	return len(ps)
+}
+
+func (ps ByDate) Swap(i, j int) {
+	ps[i], ps[j] = ps[j], ps[i]
+}
+
+func (ps ByDate) Less(i, j int) bool {
+	return ps[i].Date < ps[j].Date
 }
 
 func (p *Pack) Save(db *gorm.DB) error {

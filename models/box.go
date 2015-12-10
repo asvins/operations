@@ -10,13 +10,14 @@ const (
 
 type Box struct {
 	Base
-	ID             int     `json:"id"`
-	Status         int     `json:"status"`
-	StartDate      int     `json:"start_date"`
-	EndDate        int     `json:"end_date"`
-	SubscriptionId int     `json:"subscription_id"`
-	Value          float64 `json:"value"`
-	Packs          []Pack  `json:"packs"`
+	ID          int     `json:"id"`
+	Status      int     `json:"status"`
+	StartDate   int     `json:"start_date"`
+	EndDate     int     `json:"end_date"`
+	TreatmentId int     `json:"treatment_id"`
+	PatientId   int     `json:"patient_id"`
+	Value       float64 `json:"value"`
+	Packs       []Pack  `json:"packs"`
 }
 
 func (b *Box) Save(db *gorm.DB) error {
