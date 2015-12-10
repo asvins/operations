@@ -1,23 +1,35 @@
 package models
 
-import "time"
+import (
+	"time"
 
-const (
-	PackStatusDelivered = iota
-	PackStatusShipped
-	PackStatusOnProduction
-	PackStatusScheduled
-	PackStatusWaitingPayment
+	"github.com/jinzhu/gorm"
 )
 
 type Pack struct {
-	ID           int       `json:"pack_id" gorm:"column:id"`
-	Owner        string    `json:"owner"`
-	Supervisor   string    `json:"supervisor"`
-	From         time.Time `json:"from" gorm:"column:from_date"`
-	To           time.Time `json:"to" gorm:"column:to_date"`
-	TrackingCode string    `json:"tracking_code"`
-	Status       int       `json:"Status"`
-	PackType     string    `json:"pack_type"`
-	PackHash     string    `json:"hash"`
+	Base
+	ID              int `json:"pack_id" gorm:"column:id"`
+	BoxId           int
+	Date            time.Time        `json:"from" gorm:"column:from_date"`
+	TrackingCode    string           `json:"tracking_code"`
+	PackMedications []PackMedication `json:"pack_medications"`
+}
+
+func (p *Pack) Save(db *gorm.DB) error {
+	return db.Create(p).Error
+}
+
+func (p *Pack) Update(db *gorm.DB) error {
+	return db.Save(p).Error
+}
+
+func (p *Pack) Delete(db *gorm.DB) error {
+	return db.Delete(p).Error
+}
+
+func (p *Pack) Retrieve(db *gorm.DB) ([]Pack, error) {
+	var ps []Pack
+	err := db.Where(p).Find(&ps, p.Base.BuildQuery()).Error
+
+	return ps, err
 }
