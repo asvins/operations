@@ -6,7 +6,7 @@ type PackMedication struct {
 	Base
 	ID           int `json:"id"`
 	MedicationId int `json:"medication_id"`
-	PackId       int
+	PackId       int `json:"pack_id"`
 	Quantity     int `json:"quantity"`
 }
 
