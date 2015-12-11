@@ -72,52 +72,41 @@ func treatmentCreatedHandler(msg []byte) {
 
 	packMap := make(map[int][]models.PackMedication)
 	for _, currPrescr := range t.Prescriptions {
+		var increment int
+
 		switch currPrescr.Frequency {
 		case coreModels.PRESCRIPTION_FREQ_4H:
 			fmt.Println("[DEBUG] FREQ_4H")
-			currDate := currPrescr.StartingAt
-			for currDate < currPrescr.FinishingAt {
-				packMap[currDate] = append(packMap[currDate], models.PackMedication{MedicationId: currPrescr.MedicationId, Quantity: 1})
-				currDate += FOUR_HOURS
-			}
+			increment = FOUR_HOURS
 			break
 
 		case coreModels.PRESCRIPTION_FREQ_6H:
 			fmt.Println("[DEBUG] FREQ_6H")
-			currDate := currPrescr.StartingAt
-			for currDate < currPrescr.FinishingAt {
-				packMap[currDate] = append(packMap[currDate], models.PackMedication{MedicationId: currPrescr.MedicationId, Quantity: 1})
-				currDate += SIX_HOURS
-			}
+			increment = SIX_HOURS
 			break
 
 		case coreModels.PRESCRIPTION_FREQ_8H:
 			fmt.Println("[DEBUG] FREQ_8H")
-			currDate := currPrescr.StartingAt
-			for currDate < currPrescr.FinishingAt {
-				packMap[currDate] = append(packMap[currDate], models.PackMedication{MedicationId: currPrescr.MedicationId, Quantity: 1})
-				currDate += EIGHT_HOURS
-			}
+			increment = EIGHT_HOURS
 			break
 
 		case coreModels.PRESCRIPTION_FREQ_12H:
 			fmt.Println("[DEBUG] FREQ_12H")
-			currDate := currPrescr.StartingAt
-			for currDate < currPrescr.FinishingAt {
-				packMap[currDate] = append(packMap[currDate], models.PackMedication{MedicationId: currPrescr.MedicationId, Quantity: 1})
-				currDate += TWELVE_HOURS
-			}
+			increment = TWELVE_HOURS
 			break
 
 		case coreModels.PRESCRIPTION_FREQ_24H:
 			fmt.Println("[DEBUG] FREQ_24H")
-			currDate := currPrescr.StartingAt
-			for currDate < currPrescr.FinishingAt {
-				packMap[currDate] = append(packMap[currDate], models.PackMedication{MedicationId: currPrescr.MedicationId, Quantity: 1})
-				currDate += ONE_DAY
-			}
+			increment = ONE_DAY
 			break
 		}
+
+		currDate := currPrescr.StartingAt
+		for currDate < currPrescr.FinishingAt {
+			packMap[currDate] = append(packMap[currDate], models.PackMedication{MedicationId: currPrescr.MedicationId, Quantity: 1})
+			currDate += increment
+		}
+
 	}
 
 	fmt.Println("[DEBUG] STEP 1 MAP SIZE ", len(packMap))
@@ -142,7 +131,6 @@ func treatmentCreatedHandler(msg []byte) {
 		if currPack.Date < currBoxFinalDate {
 			currBoxPacks = append(currBoxPacks, currPack)
 		} else {
-			fmt.Println("[DEBUG] Will save box with len(packs): ", len(currBoxPacks))
 			box := models.Box{
 				Status:      models.BOX_SCHEDULED,
 				StartDate:   currBoxFinalDate - ONE_MONTH,
