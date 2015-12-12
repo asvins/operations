@@ -7,6 +7,7 @@ const (
 	BOX_SCHEDULED
 	BOX_SHIPED
 	BOX_DELIVERED
+	BOX_FINISHED
 )
 
 type Box struct {
