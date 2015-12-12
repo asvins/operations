@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -9,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/asvins/notification/mailer"
 	"github.com/asvins/operations/models"
 )
 
@@ -65,6 +67,7 @@ func shipIt() {
 	lteSlice := []string{"start_date|" + strconv.FormatInt(nowPlus8Days, 64)}
 	eqSlice := []string{"status|" + strconv.Itoa(models.BOX_PENDING)}
 
+	b.Base.Query = make(map[string][]string)
 	b.Base.Query["gte"] = gteSlice
 	b.Base.Query["lte"] = lteSlice
 	b.Base.Query["eq"] = eqSlice
@@ -101,6 +104,7 @@ func onIt() {
 	lteSlice := []string{"start_date|" + strconv.FormatInt(nowMinus1Day, 64)}
 	eqSlice := []string{"status|" + strconv.Itoa(models.BOX_SHIPED)}
 
+	b.Base.Query = make(map[string][]string)
 	b.Base.Query["gte"] = gteSlice
 	b.Base.Query["lte"] = lteSlice
 	b.Base.Query["eq"] = eqSlice
@@ -136,6 +140,7 @@ func offIt() {
 	lteSlice := []string{"end_date|" + strconv.FormatInt(now, 64)}
 	eqSlice := []string{"status|" + strconv.Itoa(models.BOX_DELIVERED)}
 
+	b.Base.Query = make(map[string][]string)
 	b.Base.Query["gte"] = gteSlice
 	b.Base.Query["lte"] = lteSlice
 	b.Base.Query["eq"] = eqSlice
@@ -166,4 +171,57 @@ func allIt() {
 	shipIt()
 	onIt()
 	offIt()
+}
+
+/*
+*	Hour cron to notify time to Pack
+ */
+func startPackNotificationCron() {
+	fmt.Println("[INFO] Starting ship CRON")
+	now := time.Now().Unix()
+	wait := ((60 * 60) - (now % (60 * 60)))
+
+	<-time.After(time.Second * time.Duration(wait))
+
+	go func() {
+		notify()
+		for {
+			<-time.After(time.Hour * 24)
+			notify()
+		}
+	}()
+}
+
+func notify() {
+	pack := models.Pack{}
+	now := time.Now().Unix()
+	nowPlus30Min := now + 30*60
+	nowMinus30Min := now - 30*30
+
+	gteSlice := []string{"date|" + strconv.FormatInt(nowMinus30Min, 64)}
+	lteSlice := []string{"date|" + strconv.FormatInt(nowPlus30Min, 64)}
+
+	pack.Base.Query = make(map[string][]string)
+	pack.Base.Query["gte"] = gteSlice
+	pack.Base.Query["lte"] = lteSlice
+
+	packs, err := pack.Retrieve(db)
+	if err != nil {
+		fmt.Println("[ERROR] ", err.Error())
+		return
+	}
+
+	mailTo := []string{}
+	for _, p := range packs {
+		mailTo = append(mailTo, p.Email)
+	}
+
+	mail := mailer.Mail{To: mailTo, Subject: "Hora do remédio", Body: mailer.TemplatePackTime}
+	b, err := json.Marshal(&mail)
+	if err != nil {
+		fmt.Println("[ERROR] ", err.Error())
+		return
+	}
+
+	producer.Publish("send_mail", b)
 }

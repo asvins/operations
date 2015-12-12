@@ -119,7 +119,7 @@ func treatmentCreatedHandler(msg []byte) {
 	// 2) packs
 	packs := []models.Pack{}
 	for date, pmeds := range packMap {
-		packs = append(packs, models.Pack{Date: date, TrackingCode: generateTrackingCode(), PackMedications: pmeds})
+		packs = append(packs, models.Pack{Date: date, TrackingCode: generateTrackingCode(), PackMedications: pmeds, Email: t.Email})
 	}
 
 	// 3) Sort packs by date

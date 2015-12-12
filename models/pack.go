@@ -7,6 +7,7 @@ type Pack struct {
 	ID              int              `json:"pack_id"`
 	BoxId           int              `json:"box_id"`
 	Date            int              `json:"date"`
+	Email           string           `json:"email"`
 	TrackingCode    string           `json:"tracking_code"`
 	PackMedications []PackMedication `json:"pack_medications"`
 }
