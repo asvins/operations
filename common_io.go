@@ -164,7 +164,8 @@ func subscriptionPaidHandler(msg []byte) {
 	}
 
 	// 1) GET no core para pegar os tratamentos do paciente com status = INATIVO
-	resp, err := http.Get(os.Getenv("core") + "/api/treatments?eq=patient_id|" + subs.Owner + "&eq=status|" + strconv.Itoa(coreModels.TREATMENT_STATUS_INACTIVE))
+	baseUrl := os.Getenv("DEPLOY_WAREHOUSE_1_PORT_8080_TCP_ADDR") + ":" + os.Getenv("DEPLOY_WAREHOUSE_1_PORT_8080_TCP_PORT")
+	resp, err := http.Get(baseUrl + "/api/treatments?eq=patient_id|" + subs.Owner + "&eq=status|" + strconv.Itoa(coreModels.TREATMENT_STATUS_INACTIVE))
 	if err != nil {
 		fmt.Println("[ERROR] ", err.Error())
 		return
