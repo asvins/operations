@@ -3,7 +3,8 @@ package models
 import "github.com/jinzhu/gorm"
 
 const (
-	BOX_SCHEDULED = iota
+	BOX_PENDING = iota
+	BOX_SCHEDULED
 	BOX_SHIPED
 	BOX_DELIVERED
 )
@@ -35,6 +36,13 @@ func (b *Box) Delete(db *gorm.DB) error {
 func (b *Box) Retrieve(db *gorm.DB) ([]Box, error) {
 	var bs []Box
 	err := db.Where(b).Find(&bs, b.Base.BuildQuery()).Error
+
+	return bs, err
+}
+
+func (b *Box) RetrieveOrdered(db *gorm.DB) ([]Box, error) {
+	var bs []Box
+	err := db.Order("start_date asc").Where(b).Find(&bs, b.Base.BuildQuery()).Error
 
 	return bs, err
 }

@@ -25,11 +25,12 @@ func shipIt() {
 	b := models.Box{}
 	// TODO write correct query
 
-	toShip, err := b.Retrieve()
+	toShip, err := b.Retrieve(db)
 	if err != nil {
 		fmt.Println("[ERROR] Unable to retrieve boxes to ship: ", err.Error())
 		return
 	}
+	fmt.Println(toShip)
 
 	// TODO what is shipping?
 }

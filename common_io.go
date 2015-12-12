@@ -5,8 +5,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
+	"net/http"
+	"os"
 	"sort"
 	"strconv"
 	"time"
@@ -14,6 +17,7 @@ import (
 	"github.com/asvins/common_io"
 	coreModels "github.com/asvins/core/models"
 	"github.com/asvins/operations/models"
+	subscriptionModels "github.com/asvins/subscription/models"
 	"github.com/asvins/utils/config"
 )
 
@@ -132,7 +136,7 @@ func treatmentCreatedHandler(msg []byte) {
 			currBoxPacks = append(currBoxPacks, currPack)
 		} else {
 			box := models.Box{
-				Status:      models.BOX_SCHEDULED,
+				Status:      models.BOX_PENDING,
 				StartDate:   currBoxFinalDate - ONE_MONTH,
 				EndDate:     currBoxFinalDate,
 				TreatmentId: t.ID,
@@ -152,26 +156,60 @@ func treatmentCreatedHandler(msg []byte) {
 }
 
 func subscriptionPaidHandler(msg []byte) {
-	//TODO mudar status da box para scheduled
+	subs := subscriptionModels.Subscription{}
 
-	//subs := subscriptionModels.Subscription{}
-	//err := json.Unmarshal(msg, &subs)
-	//if err != nil {
-	//	fmt.Println("[ERROR] ", err.Error())
-	//	return
-	//}
+	if err := json.Unmarshal(msg, &subs); err != nil {
+		fmt.Println("[ERROR] ", err.Error())
+		return
+	}
 
-	//db := postgres.GetDatabase(DatabaseConfig)
-	//packs, err := models.GetPacksByOwnerAndStatus(subs.Owner, models.PackStatusWaitingPayment, db)
-	//if err != nil {
-	//	fmt.Println("[ERROR] ", err.Error())
-	//	return
-	//}
+	// 1) GET no core para pegar os tratamentos do paciente com status = INATIVO
+	resp, err := http.Get(os.Getenv("core") + "/api/treatments?eq=patient_id|" + subs.Owner + "&eq=status|" + strconv.Itoa(coreModels.TREATMENT_STATUS_INACTIVE))
+	if err != nil {
+		fmt.Println("[ERROR] ", err.Error())
+		return
+	}
 
-	//for _, pack := range packs {
-	//	pack.Status = models.PackStatusScheduled
-	//	pack.Save(db)
-	//}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		fmt.Println("[ERROR] ", err.Error())
+		return
+	}
+
+	ts := []coreModels.Treatment{}
+
+	if err := json.Unmarshal(body, &ts); err != nil {
+		fmt.Println("[ERROR] ", err.Error())
+	}
+	// Até aqui foi só para montar a struct do tratamento
+
+	for _, currTreatment := range ts {
+		box := models.Box{}
+		box.TreatmentId = currTreatment.ID
+		box.Status = models.BOX_PENDING
+		boxes, err := box.RetrieveOrdered(db)
+		if err != nil {
+			fmt.Println("[ERROR] ", err.Error())
+			return
+		}
+
+		if len(boxes) > 0 {
+			boxes[0].Status = models.BOX_SCHEDULED
+			boxes[0].Update(db)
+		} else {
+			fmt.Println("[INFO] No boxes to schedule")
+		}
+	}
+
+	b, err := json.Marshal(ts)
+	if err != nil {
+		fmt.Println("[ERROR] ", err.Error())
+		return
+	}
+
+	producer.Publish("activate_treatments", b)
 }
 
 /*
