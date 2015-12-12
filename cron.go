@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -31,7 +32,7 @@ func consumeFromWarehouse(box *models.Box) error {
 	for _, pack := range box.Packs {
 		for _, medication := range pack.PackMedications {
 			medId := strconv.Itoa(medication.MedicationId)
-			url := "/api/inventory/product/" + medId + "/consume/1"
+			url := os.Getenv("") + "/api/inventory/product/" + medId + "/consume/1"
 
 			response, err := http.Get(url)
 			if err != nil {
@@ -78,10 +79,12 @@ func shipIt() {
 		if err != nil {
 			fmt.Println("[ERROR] ", err.Error())
 		} else {
-			curr.Status = models.BOX_SHIPED
-			if err := curr.Update(db); err != nil {
-				fmt.Println("[ERROR] ", err.Error())
-				return
+			if ok := curr.VerifyOwnerPaymentStatus(); ok == true {
+				curr.Status = models.BOX_SHIPED
+				if err := curr.Update(db); err != nil {
+					fmt.Println("[ERROR] ", err.Error())
+					return
+				}
 			}
 		}
 	}

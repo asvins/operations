@@ -1,6 +1,13 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"fmt"
+	"net/http"
+	"os"
+	"strconv"
+
+	"github.com/jinzhu/gorm"
+)
 
 const (
 	BOX_PENDING = iota
@@ -46,4 +53,20 @@ func (b *Box) RetrieveOrdered(db *gorm.DB) ([]Box, error) {
 	err := db.Order("start_date asc").Where(b).Find(&bs, b.Base.BuildQuery()).Error
 
 	return bs, err
+}
+
+func (b *Box) VerifyOwnerPaymentStatus() bool {
+	resp, err := http.Get(os.Getenv("") + "/api/subscriber/" + strconv.Itoa(b.PatientId) + "/paymentstatus")
+	if err != nil {
+		fmt.Println("[ERROR] ", err.Error())
+		return false
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK {
+		return true
+	} else {
+		return false
+	}
 }
