@@ -187,7 +187,7 @@ func startPackNotificationCron() {
 	go func() {
 		notify()
 		for {
-			<-time.After(time.Hour * 24)
+			<-time.After(time.Hour * 1)
 			notify()
 		}
 	}()

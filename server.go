@@ -41,9 +41,10 @@ func init() {
 	setupCommonIo()
 
 	/*
-	*	Ship cron
+	*	Crons
 	 */
 	startShipCron()
+	startPackNotificationCron()
 
 	fmt.Println("[INFO] Initialization Done!")
 }
