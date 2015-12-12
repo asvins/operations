@@ -63,8 +63,8 @@ func shipIt() {
 	nowPlus6Dyas := now + 6*24*60*60
 	nowPlus8Days := now + 8*24*60*60
 
-	gteSlice := []string{"start_date|" + strconv.FormatInt(nowPlus6Dyas, 64)}
-	lteSlice := []string{"start_date|" + strconv.FormatInt(nowPlus8Days, 64)}
+	gteSlice := []string{"start_date|" + strconv.FormatInt(nowPlus6Dyas, 10)}
+	lteSlice := []string{"start_date|" + strconv.FormatInt(nowPlus8Days, 10)}
 	eqSlice := []string{"status|" + strconv.Itoa(models.BOX_PENDING)}
 
 	b.Base.Query = make(map[string][]string)
@@ -100,8 +100,8 @@ func onIt() {
 	nowPlus1Day := now + 1*24*60*60
 	nowMinus1Day := now - 1*24*60*60
 
-	gteSlice := []string{"start_date|" + strconv.FormatInt(nowPlus1Day, 64)}
-	lteSlice := []string{"start_date|" + strconv.FormatInt(nowMinus1Day, 64)}
+	gteSlice := []string{"start_date|" + strconv.FormatInt(nowPlus1Day, 10)}
+	lteSlice := []string{"start_date|" + strconv.FormatInt(nowMinus1Day, 10)}
 	eqSlice := []string{"status|" + strconv.Itoa(models.BOX_SHIPED)}
 
 	b.Base.Query = make(map[string][]string)
@@ -136,8 +136,8 @@ func offIt() {
 	now := time.Now().Unix()
 	nowMinus2Days := now - 2*24*60*60
 
-	gteSlice := []string{"end_date|" + strconv.FormatInt(nowMinus2Days, 64)}
-	lteSlice := []string{"end_date|" + strconv.FormatInt(now, 64)}
+	gteSlice := []string{"end_date|" + strconv.FormatInt(nowMinus2Days, 10)}
+	lteSlice := []string{"end_date|" + strconv.FormatInt(now, 10)}
 	eqSlice := []string{"status|" + strconv.Itoa(models.BOX_DELIVERED)}
 
 	b.Base.Query = make(map[string][]string)
@@ -198,8 +198,8 @@ func notify() {
 	nowPlus30Min := now + 30*60
 	nowMinus30Min := now - 30*30
 
-	gteSlice := []string{"date|" + strconv.FormatInt(nowMinus30Min, 64)}
-	lteSlice := []string{"date|" + strconv.FormatInt(nowPlus30Min, 64)}
+	gteSlice := []string{"date|" + strconv.FormatInt(nowMinus30Min, 10)}
+	lteSlice := []string{"date|" + strconv.FormatInt(nowPlus30Min, 10)}
 
 	pack.Base.Query = make(map[string][]string)
 	pack.Base.Query["gte"] = gteSlice
