@@ -10,6 +10,7 @@ type Pack struct {
 	Email           string           `json:"email"`
 	TrackingCode    string           `json:"tracking_code"`
 	PackMedications []PackMedication `json:"pack_medications"`
+	Value           float64          `json:"value" sql"-"`
 }
 
 /*

@@ -19,6 +19,7 @@ import (
 	"github.com/asvins/operations/models"
 	subscriptionModels "github.com/asvins/subscription/models"
 	"github.com/asvins/utils/config"
+	warehouseModels "github.com/asvins/warehouse/models"
 )
 
 const (
@@ -105,12 +106,22 @@ func treatmentCreatedHandler(msg []byte) {
 			break
 		}
 
-		currDate := currPrescr.StartingAt
-		for currDate < currPrescr.FinishingAt {
-			packMap[currDate] = append(packMap[currDate], models.PackMedication{MedicationId: currPrescr.MedicationId, Quantity: 1})
-			currDate += increment
+		warehouseMeds, err := getMedicationsFromWarehouse()
+		if err != nil {
+			fmt.Println("[ERROR] ", err.Error())
+			return
 		}
 
+		currDate := currPrescr.StartingAt
+		for currDate < currPrescr.FinishingAt {
+			toAppend := models.PackMedication{
+				MedicationId: currPrescr.MedicationId,
+				Quantity:     1,
+				Value:        warehouseMeds[currPrescr.MedicationId].CurrentValue,
+			}
+			packMap[currDate] = append(packMap[currDate], toAppend)
+			currDate += increment
+		}
 	}
 
 	fmt.Println("[DEBUG] STEP 1 MAP SIZE ", len(packMap))
@@ -119,7 +130,11 @@ func treatmentCreatedHandler(msg []byte) {
 	// 2) packs
 	packs := []models.Pack{}
 	for date, pmeds := range packMap {
-		packs = append(packs, models.Pack{Date: date, TrackingCode: generateTrackingCode(), PackMedications: pmeds, Email: t.Email})
+		packValue := 0.0
+		for _, pmed := range pmeds {
+			packValue += pmed.Value
+		}
+		packs = append(packs, models.Pack{Date: date, TrackingCode: generateTrackingCode(), PackMedications: pmeds, Email: t.Email, Value: packValue})
 	}
 
 	// 3) Sort packs by date
@@ -135,6 +150,10 @@ func treatmentCreatedHandler(msg []byte) {
 		if currPack.Date < currBoxFinalDate {
 			currBoxPacks = append(currBoxPacks, currPack)
 		} else {
+			currBoxValue := 0.0
+			for _, currBoxPacksPack := range currBoxPacks {
+				currBoxValue += currBoxPacksPack.Value
+			}
 			box := models.Box{
 				Status:      models.BOX_PENDING,
 				StartDate:   currBoxFinalDate - ONE_MONTH,
@@ -142,6 +161,7 @@ func treatmentCreatedHandler(msg []byte) {
 				TreatmentId: t.ID,
 				PatientId:   t.PatientId,
 				Packs:       currBoxPacks,
+				Value:       currBoxValue,
 			}
 			err := box.Save(db)
 			if err != nil {
@@ -152,7 +172,6 @@ func treatmentCreatedHandler(msg []byte) {
 			currBoxPacks = []models.Pack{}
 		}
 	}
-
 }
 
 func subscriptionPaidHandler(msg []byte) {
@@ -164,7 +183,7 @@ func subscriptionPaidHandler(msg []byte) {
 	}
 
 	// 1) GET no core para pegar os tratamentos do paciente com status = INATIVO
-	baseUrl := os.Getenv("DEPLOY_WAREHOUSE_1_PORT_8080_TCP_ADDR") + ":" + os.Getenv("DEPLOY_WAREHOUSE_1_PORT_8080_TCP_PORT")
+	baseUrl := os.Getenv("DEPLOY_CORE_1_PORT_8080_TCP_ADDR") + ":" + os.Getenv("DEPLOY_CORE_1_PORT_8080_TCP_PORT")
 	resp, err := http.Get(baseUrl + "/api/treatments?eq=patient_id|" + subs.Owner + "&eq=status|" + strconv.Itoa(coreModels.TREATMENT_STATUS_INACTIVE))
 	if err != nil {
 		fmt.Println("[ERROR] ", err.Error())
@@ -222,4 +241,31 @@ func generateTrackingCode() string {
 	tc := strconv.Itoa(rand.Intn(10000))
 	h.Write([]byte(tc))
 	return hex.EncodeToString(h.Sum(nil))
+}
+
+func getMedicationsFromWarehouse() (map[int]warehouseModels.Product, error) {
+	baseURL := os.Getenv("DEPLOY_WAREHOUSE_1_PORT_8080_TCP_ADDR") + ":" + os.Getenv("DEPLOY_WAREHOUSE_1_PORT_8080_TCP_PORT")
+	response, err := http.Get(baseURL + "/api/product")
+	if err != nil {
+		return nil, err
+	}
+
+	response.Body.Close()
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	products := []warehouseModels.Product{}
+	if err := json.Unmarshal(body, &products); err != nil {
+		return nil, err
+	}
+
+	m := make(map[int]warehouseModels.Product)
+	for _, p := range products {
+		m[p.ID] = p
+	}
+
+	return m, nil
 }

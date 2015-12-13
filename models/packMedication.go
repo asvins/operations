@@ -4,10 +4,11 @@ import "github.com/jinzhu/gorm"
 
 type PackMedication struct {
 	Base
-	ID           int `json:"id"`
-	MedicationId int `json:"medication_id"`
-	PackId       int `json:"pack_id"`
-	Quantity     int `json:"quantity"`
+	ID           int     `json:"id"`
+	MedicationId int     `json:"medication_id"`
+	PackId       int     `json:"pack_id"`
+	Quantity     int     `json:"quantity"`
+	Value        float64 `json:"value" sql:"-"`
 }
 
 func (p *PackMedication) Save(db *gorm.DB) error {
