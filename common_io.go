@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -245,7 +246,7 @@ func generateTrackingCode() string {
 
 func getMedicationsFromWarehouse() (map[int]warehouseModels.Product, error) {
 	baseURL := "http://" + os.Getenv("DEPLOY_WAREHOUSE_1_PORT_8080_TCP_ADDR") + ":" + os.Getenv("DEPLOY_WAREHOUSE_1_PORT_8080_TCP_PORT")
-	response, err := http.Get(baseURL + "/api/product")
+	response, err := http.Get(baseURL + "/api/inventory/product")
 	if err != nil {
 		return nil, err
 	}
@@ -255,6 +256,10 @@ func getMedicationsFromWarehouse() (map[int]warehouseModels.Product, error) {
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return nil, errors.New(string(body))
 	}
 
 	products := []warehouseModels.Product{}
