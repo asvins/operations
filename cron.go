@@ -224,6 +224,5 @@ func notify() {
 		return
 	}
 
-	producer.Publish("create_notification_time_feed", b)
 	producer.Publish("send_mail", b)
 }
