@@ -34,7 +34,7 @@ func consumeFromWarehouse(box *models.Box) error {
 	for _, pack := range box.Packs {
 		for _, medication := range pack.PackMedications {
 			medId := strconv.Itoa(medication.MedicationId)
-			baseUrl := os.Getenv("DEPLOY_WAREHOUSE_1_PORT_8080_TCP_ADDR") + ":" + os.Getenv("DEPLOY_WAREHOUSE_1_PORT_8080_TCP_PORT")
+			baseUrl := "http://" + os.Getenv("DEPLOY_WAREHOUSE_1_PORT_8080_TCP_ADDR") + ":" + os.Getenv("DEPLOY_WAREHOUSE_1_PORT_8080_TCP_PORT")
 			url := baseUrl + "/api/inventory/product/" + medId + "/consume/1"
 
 			response, err := http.Get(url)

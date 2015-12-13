@@ -183,7 +183,7 @@ func subscriptionPaidHandler(msg []byte) {
 	}
 
 	// 1) GET no core para pegar os tratamentos do paciente com status = INATIVO
-	baseUrl := os.Getenv("DEPLOY_CORE_1_PORT_8080_TCP_ADDR") + ":" + os.Getenv("DEPLOY_CORE_1_PORT_8080_TCP_PORT")
+	baseUrl := "http://" + os.Getenv("DEPLOY_CORE_1_PORT_8080_TCP_ADDR") + ":" + os.Getenv("DEPLOY_CORE_1_PORT_8080_TCP_PORT")
 	resp, err := http.Get(baseUrl + "/api/treatments?eq=patient_id|" + subs.Owner + "&eq=status|" + strconv.Itoa(coreModels.TREATMENT_STATUS_INACTIVE))
 	if err != nil {
 		fmt.Println("[ERROR] ", err.Error())
@@ -244,13 +244,13 @@ func generateTrackingCode() string {
 }
 
 func getMedicationsFromWarehouse() (map[int]warehouseModels.Product, error) {
-	baseURL := os.Getenv("DEPLOY_WAREHOUSE_1_PORT_8080_TCP_ADDR") + ":" + os.Getenv("DEPLOY_WAREHOUSE_1_PORT_8080_TCP_PORT")
+	baseURL := "http://" + os.Getenv("DEPLOY_WAREHOUSE_1_PORT_8080_TCP_ADDR") + ":" + os.Getenv("DEPLOY_WAREHOUSE_1_PORT_8080_TCP_PORT")
 	response, err := http.Get(baseURL + "/api/product")
 	if err != nil {
 		return nil, err
 	}
 
-	response.Body.Close()
+	defer response.Body.Close()
 
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
