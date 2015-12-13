@@ -169,6 +169,8 @@ func treatmentCreatedHandler(msg []byte) {
 				fmt.Println("[ERROR] Could not save box on database: ", err.Error())
 				return
 			}
+
+			sendBoxCreated(box)
 			currBoxFinalDate += ONE_MONTH
 			currBoxPacks = []models.Pack{}
 		}
@@ -231,6 +233,23 @@ func subscriptionPaidHandler(msg []byte) {
 	}
 
 	producer.Publish("activate_treatments", b)
+}
+
+/*
+*	Senders
+ */
+func sendBoxCreated(box models.Box) {
+	topic, _ := common_io.BuildTopicFromCommonEvent(common_io.EVENT_CREATED, "box")
+	/*
+	 * json Marshal
+	 */
+	b, err := json.Marshal(&box)
+	if err != nil {
+		fmt.Println("[ERROR] ", err.Error())
+		return
+	}
+
+	producer.Publish(topic, b)
 }
 
 /*
