@@ -21,8 +21,8 @@ type Box struct {
 	Base
 	ID          int     `json:"id"`
 	Status      int     `json:"status"`
-	StartDate   int     `json:"start_date"`
-	EndDate     int     `json:"end_date"`
+	StartDate   int64   `json:"start_date"`
+	EndDate     int64   `json:"end_date"`
 	TreatmentId int     `json:"treatment_id"`
 	PatientId   int     `json:"patient_id"`
 	Value       float64 `json:"value"`

@@ -73,12 +73,12 @@ func treatmentCreatedHandler(msg []byte) {
 	}
 
 	// 1) packmads
-	var ndays int = ((t.FinishDate - t.StartDate) / ONE_DAY) + 1
+	var ndays int64 = ((t.FinishDate - t.StartDate) / ONE_DAY) + 1
 	fmt.Println("[DEBUG] ndays: ", ndays)
 
-	packMap := make(map[int][]models.PackMedication)
+	packMap := make(map[int64][]models.PackMedication)
 	for _, currPrescr := range t.Prescriptions {
-		var increment int
+		var increment int64
 
 		switch currPrescr.Frequency {
 		case coreModels.PRESCRIPTION_FREQ_4H:
@@ -170,7 +170,7 @@ func treatmentCreatedHandler(msg []byte) {
 	}
 }
 
-func createBox(currBoxPacks []models.Pack, currBoxFinalDate int, t coreModels.Treatment) {
+func createBox(currBoxPacks []models.Pack, currBoxFinalDate int64, t coreModels.Treatment) {
 	currBoxValue := 0.0
 	for _, currBoxPacksPack := range currBoxPacks {
 		currBoxValue += currBoxPacksPack.Value
