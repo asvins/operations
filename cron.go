@@ -117,18 +117,12 @@ func onIt() {
 	}
 
 	for _, curr := range toOn {
-		err := consumeFromWarehouse(&curr)
-		if err != nil {
+		curr.Status = models.BOX_DELIVERED
+		if err := curr.Update(db); err != nil {
 			fmt.Println("[ERROR] ", err.Error())
-		} else {
-			curr.Status = models.BOX_DELIVERED
-			if err := curr.Update(db); err != nil {
-				fmt.Println("[ERROR] ", err.Error())
-				return
-			}
+			return
 		}
 	}
-
 }
 
 //	4) As box que terminar ontem trocar o status para OFF
@@ -153,18 +147,12 @@ func offIt() {
 	}
 
 	for _, curr := range toOff {
-		err := consumeFromWarehouse(&curr)
-		if err != nil {
+		curr.Status = models.BOX_FINISHED
+		if err := curr.Update(db); err != nil {
 			fmt.Println("[ERROR] ", err.Error())
-		} else {
-			curr.Status = models.BOX_FINISHED
-			if err := curr.Update(db); err != nil {
-				fmt.Println("[ERROR] ", err.Error())
-				return
-			}
+			return
 		}
 	}
-
 }
 
 // Execute all actions for shipping and updating everything
