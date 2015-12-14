@@ -145,36 +145,53 @@ func treatmentCreatedHandler(msg []byte) {
 
 	// 4) box
 	currBoxFinalDate := t.StartDate + ONE_MONTH
+	if t.FinishDate < ONE_MONTH {
+		currBoxFinalDate = t.FinishDate
+	}
+
 	currBoxPacks := []models.Pack{}
 
 	for _, currPack := range packs {
 		if currPack.Date < currBoxFinalDate {
 			currBoxPacks = append(currBoxPacks, currPack)
 		} else {
+			//createBox()
 			currBoxValue := 0.0
 			for _, currBoxPacksPack := range currBoxPacks {
 				currBoxValue += currBoxPacksPack.Value
 			}
-			box := models.Box{
-				Status:      models.BOX_PENDING,
-				StartDate:   currBoxFinalDate - ONE_MONTH,
-				EndDate:     currBoxFinalDate,
-				TreatmentId: t.ID,
-				PatientId:   t.PatientId,
-				Packs:       currBoxPacks,
-				Value:       currBoxValue,
-			}
-			err := box.Save(db)
-			if err != nil {
-				fmt.Println("[ERROR] Could not save box on database: ", err.Error())
-				return
-			}
-
-			sendBoxCreated(box)
+			createBox(currBoxPacks, currBoxFinalDate, t)
 			currBoxFinalDate += ONE_MONTH
 			currBoxPacks = []models.Pack{}
 		}
 	}
+	if len(currBoxPacks) != 0 {
+		createBox(currBoxPacks, currBoxFinalDate, t)
+	}
+}
+
+func createBox(currBoxPacks []models.Pack, currBoxFinalDate int, t coreModels.Treatment) {
+	currBoxValue := 0.0
+	for _, currBoxPacksPack := range currBoxPacks {
+		currBoxValue += currBoxPacksPack.Value
+	}
+
+	fmt.Println("[INFO] Will save box with ", len(currBoxPacks), " Packs!")
+	box := models.Box{
+		Status:      models.BOX_PENDING,
+		StartDate:   currBoxFinalDate - ONE_MONTH,
+		EndDate:     currBoxFinalDate,
+		TreatmentId: t.ID,
+		PatientId:   t.PatientId,
+		Packs:       currBoxPacks,
+		Value:       currBoxValue,
+	}
+	err := box.Save(db)
+	if err != nil {
+		fmt.Println("[ERROR] Could not save box on database: ", err.Error())
+		return
+	}
+	sendBoxCreated(box)
 }
 
 func subscriptionPaidHandler(msg []byte) {
