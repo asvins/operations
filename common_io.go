@@ -73,10 +73,6 @@ func treatmentCreatedHandler(msg []byte) {
 		return
 	}
 
-	if t.Status == coreModels.TREATMENT_STATUS_INACTIVE {
-		return
-	}
-
 	// 1) packmads
 	var ndays int64 = ((t.FinishDate - t.StartDate) / ONE_DAY) + 1
 	fmt.Println("[DEBUG] ndays: ", ndays)
