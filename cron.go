@@ -22,7 +22,7 @@ func startShipCron() {
 	go func() {
 		allIt()
 		for {
-			<-time.After(time.Hour * 24)
+			<-time.After(time.Minute * 5)
 			allIt()
 		}
 	}()
@@ -167,15 +167,15 @@ func allIt() {
  */
 func startPackNotificationCron() {
 	fmt.Println("[INFO] Starting ship CRON")
-	now := time.Now().Unix()
-	wait := ((60 * 60) - (now % (60 * 60)))
+	//now := time.Now().Unix()
+	//wait := ((60 * 60) - (now % (60 * 60)))
 
-	<-time.After(time.Second * time.Duration(wait))
+	//<-time.After(time.Second * time.Duration(wait))
 
 	go func() {
 		notify()
 		for {
-			<-time.After(time.Hour * 1)
+			<-time.After(time.Minute * 5)
 			notify()
 		}
 	}()
