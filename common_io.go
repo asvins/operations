@@ -57,6 +57,7 @@ func setupCommonIo() {
 	*	topics
 	 */
 	consumer.HandleTopic("treatment_created", treatmentCreatedHandler)
+	consumer.HandleTopic("treatment_updated", treatmentCreatedHandler)
 	consumer.HandleTopic("subscription_paid", subscriptionPaidHandler)
 
 	if err = consumer.StartListening(); err != nil {
@@ -69,6 +70,10 @@ func treatmentCreatedHandler(msg []byte) {
 	err := json.Unmarshal(msg, &t)
 	if err != nil {
 		fmt.Println("[ERROR] ", err.Error())
+		return
+	}
+
+	if t.Status == coreModels.TREATMENT_STATUS_INACTIVE {
 		return
 	}
 
